@@ -1,13 +1,16 @@
 {
   "name": "aws",
   "private": true,
-  "type": "module",
   "description": "AWS services through the official managed MCP server, using your own AWS identity and permissions.",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "apps": "0.0.1-beta.104-basalt.13",
+    "effect": "4.0.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
   "executor": {
     "title": "AWS"
-  },
-  "dependencies": {
-    "apps": "0.0.1-beta.104-basalt.8",
-    "@modelcontextprotocol/sdk": "1.32.1"
   }
 }

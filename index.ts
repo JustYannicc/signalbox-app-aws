@@ -1,27 +1,35 @@
 import { accountRouter, defineApp, router, withApprovals } from "apps";
 import { always } from "apps/operations/approval";
 import { mcpRouter } from "apps/mcp";
-import { aws, endpoint } from "./provider.js";
-import { icons } from "./icon.js";
-
-const requirements = { user: { accounts: { aws: aws.many() } }, icons };
+import { endpoint } from "./provider.ts";
+import { requirements } from "./requirements.ts";
+import { connection } from "./connection.ts";
+import { createOperations } from "./operations.ts";
 
 export default defineApp(requirements, async ({ user, cache, signal }) => ({
   tools: router(
     await accountRouter(
-      user?.accounts.aws ?? [],
+      [...(user?.accounts.identityCenter ?? []), ...(user?.accounts.aws ?? [])],
       async (account) =>
-        withApprovals(
-          await mcpRouter({ url: endpoint, account, headers: account.headers(), cache, signal }),
-          // AWS's API and script tools can write across services, even when a name looks like a read.
-          () => always(),
-        ),
+        account.method === "identityCenter"
+          ? router(createOperations(account.id))
+          : withApprovals(
+              await mcpRouter({
+                url: endpoint,
+                account,
+                headers: account.headers(),
+                cache,
+                signal,
+              }),
+              () => always(),
+            ),
       { signal },
     ),
     {
       title: "AWS",
-      description: "Use AWS services through the official AWS MCP server with each person's own permissions. Every tool call asks for approval.",
-      icons,
+      description:
+        "Use your assigned AWS accounts and roles. Each task has its own target; production changes and opaque scripts ask for approval.",
     },
   ),
+  connect: { identityCenter: connection },
 }));
