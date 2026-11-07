@@ -240,6 +240,8 @@ export const makeIdentityCenter = (
       },
       session,
     );
+    if (accounts.some((account) => !/^\d{12}$/u.test(account.accountId)))
+      throw new AwsIdentityError("invalid_response", false);
     if (accounts.length === 0) throw new AwsIdentityError("no_access", false);
     return accounts;
   };

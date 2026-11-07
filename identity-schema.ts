@@ -1,12 +1,12 @@
-import { Schema } from "effect";
+import { object, string, number, array, type Schema } from "apps";
 import { AwsIdentityError } from "./errors.ts";
 
 const registeredClientFields = {
-  clientId: Schema.NonEmptyString,
-  clientSecret: Schema.NonEmptyString,
-  clientSecretExpiresAt: Schema.Number,
+  clientId: string({ minLength: 1 }),
+  clientSecret: string({ minLength: 1 }),
+  clientSecretExpiresAt: number(),
 };
-export const RegisteredClientSchema = Schema.Struct(registeredClientFields);
+export const RegisteredClientSchema = object(registeredClientFields);
 export interface RegisteredClient {
   readonly clientId: string;
   readonly clientSecret: string;
@@ -16,13 +16,13 @@ export interface IdentityClientSession extends RegisteredClient {
   readonly region: string;
   readonly startUrl: string;
 }
-export const DeviceAuthorizationSchema = Schema.Struct({
-  deviceCode: Schema.NonEmptyString,
-  userCode: Schema.NonEmptyString,
-  verificationUri: Schema.NonEmptyString,
-  verificationUriComplete: Schema.NonEmptyString,
-  expiresAt: Schema.Number,
-  intervalSeconds: Schema.Number,
+export const DeviceAuthorizationSchema = object({
+  deviceCode: string({ minLength: 1 }),
+  userCode: string({ minLength: 1 }),
+  verificationUri: string({ minLength: 1 }),
+  verificationUriComplete: string({ minLength: 1 }),
+  expiresAt: number(),
+  intervalSeconds: number(),
 });
 export interface DeviceAuthorization {
   readonly deviceCode: string;
@@ -34,49 +34,49 @@ export interface DeviceAuthorization {
 }
 export interface PendingIdentitySession extends IdentityClientSession, DeviceAuthorization {}
 const tokenSetFields = {
-  accessToken: Schema.NonEmptyString,
-  accessTokenExpiresAt: Schema.Number,
-  refreshToken: Schema.optionalKey(Schema.NonEmptyString),
-  refreshTokenExpiresAt: Schema.optionalKey(Schema.Number),
+  accessToken: string({ minLength: 1 }),
+  accessTokenExpiresAt: number(),
+  refreshToken: string({ minLength: 1 }).optional(),
+  refreshTokenExpiresAt: number().optional(),
 };
-export const TokenSetSchema = Schema.Struct(tokenSetFields);
+export const TokenSetSchema = object(tokenSetFields);
 export interface TokenSet {
   readonly accessToken: string;
   readonly accessTokenExpiresAt: number;
-  readonly refreshToken?: string;
-  readonly refreshTokenExpiresAt?: number;
+  readonly refreshToken?: string | undefined;
+  readonly refreshTokenExpiresAt?: number | undefined;
 }
-export const IdentitySessionSchema = Schema.Struct({
+export const IdentitySessionSchema = object({
   ...registeredClientFields,
   ...tokenSetFields,
-  region: Schema.NonEmptyString,
-  startUrl: Schema.NonEmptyString,
+  region: string({ minLength: 1 }),
+  startUrl: string({ minLength: 1 }),
 });
 export interface IdentitySession extends IdentityClientSession, TokenSet {}
-export const PendingIdentitySessionSchema = Schema.Struct({
+export const PendingIdentitySessionSchema = object({
   ...registeredClientFields,
-  region: Schema.NonEmptyString,
-  startUrl: Schema.NonEmptyString,
-  deviceCode: Schema.NonEmptyString,
-  userCode: Schema.NonEmptyString,
-  verificationUri: Schema.NonEmptyString,
-  verificationUriComplete: Schema.NonEmptyString,
-  expiresAt: Schema.Number,
-  intervalSeconds: Schema.Number,
+  region: string({ minLength: 1 }),
+  startUrl: string({ minLength: 1 }),
+  deviceCode: string({ minLength: 1 }),
+  userCode: string({ minLength: 1 }),
+  verificationUri: string({ minLength: 1 }),
+  verificationUriComplete: string({ minLength: 1 }),
+  expiresAt: number(),
+  intervalSeconds: number(),
 });
-export const AssignedAccountSchema = Schema.Struct({
-  accountId: Schema.String.check(Schema.isPattern(/^\d{12}$/u)),
-  accountName: Schema.NonEmptyString,
-  emailAddress: Schema.optionalKey(Schema.String),
+export const AssignedAccountSchema = object({
+  accountId: string(),
+  accountName: string({ minLength: 1 }),
+  emailAddress: string().optional(),
 });
 export interface AssignedAccount {
   readonly accountId: string;
   readonly accountName: string;
-  readonly emailAddress?: string;
+  readonly emailAddress?: string | undefined;
 }
-export const AssignedRoleSchema = Schema.Struct({
-  roleName: Schema.NonEmptyString,
-  accountId: Schema.optionalKey(Schema.String.check(Schema.isPattern(/^\d{12}$/u))),
+export const AssignedRoleSchema = object({
+  roleName: string({ minLength: 1 }),
+  accountId: string().optional(),
 });
 export interface AssignedRole {
   readonly roleName: string;
@@ -90,38 +90,40 @@ export interface TemporaryRoleCredentials {
 }
 
 export const Registered = RegisteredClientSchema;
-export const Device = Schema.Struct({
-  deviceCode: Schema.NonEmptyString,
-  userCode: Schema.NonEmptyString,
-  verificationUri: Schema.String,
-  verificationUriComplete: Schema.String,
-  expiresIn: Schema.Number,
-  interval: Schema.optionalKey(Schema.Number),
+export const Device = object({
+  deviceCode: string({ minLength: 1 }),
+  userCode: string({ minLength: 1 }),
+  verificationUri: string(),
+  verificationUriComplete: string(),
+  expiresIn: number(),
+  interval: number().optional(),
 });
-export const Token = Schema.Struct({
-  accessToken: Schema.NonEmptyString,
-  expiresIn: Schema.Number,
-  refreshToken: Schema.optionalKey(Schema.NonEmptyString),
-  refreshTokenExpiresIn: Schema.optionalKey(Schema.Number),
+export const Token = object({
+  accessToken: string({ minLength: 1 }),
+  expiresIn: number(),
+  refreshToken: string({ minLength: 1 }).optional(),
+  refreshTokenExpiresIn: number().optional(),
 });
-export const AccountsPage = Schema.Struct({
-  accountList: Schema.Array(AssignedAccountSchema),
-  nextToken: Schema.optionalKey(Schema.String),
+export const AccountsPage = object({
+  accountList: array(AssignedAccountSchema),
+  nextToken: string().optional(),
 });
-export const RolesPage = Schema.Struct({
-  roleList: Schema.Array(AssignedRoleSchema),
-  nextToken: Schema.optionalKey(Schema.String),
+export const RolesPage = object({
+  roleList: array(AssignedRoleSchema),
+  nextToken: string().optional(),
 });
-export const RoleCredentials = Schema.Struct({
-  roleCredentials: Schema.Struct({
-    accessKeyId: Schema.NonEmptyString,
-    secretAccessKey: Schema.NonEmptyString,
-    sessionToken: Schema.NonEmptyString,
-    expiration: Schema.Number,
+export const RoleCredentials = object({
+  roleCredentials: object({
+    accessKeyId: string({ minLength: 1 }),
+    secretAccessKey: string({ minLength: 1 }),
+    sessionToken: string({ minLength: 1 }),
+    expiration: number(),
   }),
 });
-export const parse = <A>(schema: Schema.Decoder<A>, value: unknown): A => {
-  const result = Schema.decodeUnknownOption(schema)(value);
-  if (result._tag === "None") throw new AwsIdentityError("invalid_response", false);
-  return result.value;
+export const parse = <A>(schema: Schema<A>, value: unknown): A => {
+  try {
+    return schema.parse(value);
+  } catch {
+    throw new AwsIdentityError("invalid_response", false);
+  }
 };

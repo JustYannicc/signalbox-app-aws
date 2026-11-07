@@ -1,5 +1,5 @@
 /** The host owns connection identity; AWS owns federation and session expiry. */
-import { Schema } from "effect";
+import { object, string, type Infer } from "apps";
 import type { ConnectContext, InteractiveInstructions, InteractiveStatus } from "apps";
 import { makeIdentityCenter, AwsIdentityError } from "./identity-client.ts";
 import { identityEndpoints } from "./wire.ts";
@@ -13,14 +13,15 @@ import {
 import { SavedSession, PendingSession, assignedInventory } from "./identity-state.ts";
 import type { requirements } from "./requirements.ts";
 type Context = ConnectContext<typeof requirements>;
-const Fields = Schema.fromJsonString(
-  Schema.Struct({ startUrl: Schema.NonEmptyString, region: Schema.NonEmptyString }),
-);
+const Fields = object({ startUrl: string({ minLength: 1 }), region: string({ minLength: 1 }) });
 const owner = (ctx: Context) => {
   if (!ctx.user.id) throw new Error("AWS sign-in needs a signed-in person.");
   return ctx.user.id;
 };
-const form = (previous?: { startUrl?: string; region?: string }): InteractiveInstructions => ({
+const form = (previous?: {
+  startUrl?: string | undefined;
+  region?: string | undefined;
+}): InteractiveInstructions => ({
   message:
     "Use your company's AWS access portal. AWS will take you to its normal sign-in, including Okta if your company uses it. Find the start URL in your AWS access portal; the Identity Center region is shown in its settings or your existing AWS SSO configuration. It can differ from your workload region.",
   form: {
@@ -47,7 +48,7 @@ const form = (previous?: { startUrl?: string; region?: string }): InteractiveIns
   },
 });
 const waiting = (
-  pending: NonNullable<typeof PendingSession.Type.pending>,
+  pending: NonNullable<Infer<typeof PendingSession>["pending"]>,
 ): InteractiveInstructions => ({
   url: pending.verificationUriComplete,
   code: pending.userCode,
@@ -101,12 +102,15 @@ export const connection = {
     if (!retained) return { state: "failed", message: "This AWS sign-in ended. Start again." };
     if (retained.value.pending)
       return { state: "waiting", instructions: waiting(retained.value.pending) };
-    const fields = Schema.decodeUnknownOption(Fields)(input.value);
-    if (fields._tag === "None")
+    let fields: Infer<typeof Fields>;
+    try {
+      fields = Fields.parse(JSON.parse(input.value));
+    } catch {
       return {
         state: "waiting",
         instructions: { ...form(), message: "Enter the AWS start URL and Identity Center region." },
       };
+    }
     const release = claimPrivate(
       ctx.sql,
       "identity_attempts",
@@ -115,7 +119,7 @@ export const connection = {
       retained.revision,
     );
     try {
-      const aws = client(ctx, fields.value),
+      const aws = client(ctx, fields),
         begun = await aws.begin(),
         pending = { ...begun.client, ...begun.device };
       await writePrivate(
@@ -140,7 +144,7 @@ export const connection = {
       )
         return {
           state: "waiting",
-          instructions: { ...form(fields.value), message: error.message },
+          instructions: { ...form(fields), message: error.message },
         };
       return fail(error);
     } finally {

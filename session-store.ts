@@ -1,5 +1,5 @@
 /** Session keys stay in the host-encrypted account reference, outside app SQL. */
-import { Schema } from "effect";
+import { object, string, number, jsonSchema, type Schema } from "apps";
 import type { Sql, SqlReader } from "apps/contracts";
 
 const hex = (bytes: Uint8Array) =>
@@ -7,11 +7,11 @@ const hex = (bytes: Uint8Array) =>
 const bytes = (text: string) =>
   Uint8Array.from(text.match(/../gu) ?? [], (byte) => Number.parseInt(byte, 16));
 const Reference = /^sso:([0-9a-f-]{36}):([0-9a-f]{64})$/u;
-const Stored = Schema.Struct({
-  ciphertext: Schema.String,
-  revision: Schema.Number,
-  lease: Schema.NullOr(Schema.String),
-  lease_until: Schema.Number,
+const Stored = object({
+  ciphertext: string(),
+  revision: number(),
+  lease: jsonSchema({ type: ["string", "null"] }),
+  lease_until: number(),
 });
 export type PrivateTable = "identity_sessions" | "identity_attempts";
 export const newReference = () =>
@@ -41,7 +41,7 @@ export const readPrivate = async <A>(
   table: PrivateTable,
   owner: string,
   reference: string,
-  schema: Schema.Decoder<A>,
+  schema: Schema<A>,
 ) => {
   const { id, key } = parts(reference);
   const row = sql
@@ -52,7 +52,7 @@ export const readPrivate = async <A>(
     )
     .toArray()[0];
   if (!row) return undefined;
-  const stored = Schema.decodeUnknownSync(Stored)(row),
+  const stored = Stored.parse(row),
     [nonce, ciphertext] = stored.ciphertext.split(":");
   if (!nonce || !ciphertext)
     throw new Error(
@@ -67,9 +67,7 @@ export const readPrivate = async <A>(
     await cipherKey(key),
     bytes(ciphertext),
   );
-  const value = Schema.decodeUnknownSync(Schema.fromJsonString(schema))(
-    new TextDecoder().decode(plaintext),
-  );
+  const value = schema.parse(JSON.parse(new TextDecoder().decode(plaintext)));
   return {
     value,
     revision: stored.revision,

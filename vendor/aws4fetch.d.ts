@@ -1,5 +1,6 @@
 export class AwsClient {
-    constructor({ accessKeyId, secretAccessKey, sessionToken, service, region, cache, retries, initRetryMs }: {
+    constructor({ accessKeyId, secretAccessKey, sessionToken, service, region, cache, retries, initRetryMs, fetch }: {
+        fetch: typeof globalThis.fetch;
         accessKeyId: string;
         secretAccessKey: string;
         sessionToken?: string;

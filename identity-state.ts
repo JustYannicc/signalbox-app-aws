@@ -1,40 +1,40 @@
 /** Private session state and public account inventory share stable AWS IDs. */
-import { Schema } from "effect";
+import { object, string, number, array, boolean, type Infer } from "apps";
 import { ChoiceRequired } from "./safe-result.ts";
 import { IdentitySessionSchema, PendingIdentitySessionSchema } from "./identity-client.ts";
-export const Target = Schema.Struct({
-  accountId: Schema.NonEmptyString,
-  roleName: Schema.NonEmptyString,
+export const Target = object({
+  accountId: string({ minLength: 1 }),
+  roleName: string({ minLength: 1 }),
 });
-export const InventoryAccount = Schema.Struct({
-  accountId: Schema.NonEmptyString,
-  accountName: Schema.NonEmptyString,
-  roles: Schema.Array(Schema.NonEmptyString),
-  production: Schema.Boolean,
+export const InventoryAccount = object({
+  accountId: string({ minLength: 1 }),
+  accountName: string({ minLength: 1 }),
+  roles: array(string({ minLength: 1 })),
+  production: boolean(),
 });
-export const SavedSession = Schema.Struct({
+export const SavedSession = object({
   session: IdentitySessionSchema,
-  accounts: Schema.Array(InventoryAccount),
-  defaultTarget: Schema.optionalKey(Target),
-  reauthenticationRequired: Schema.optionalKey(Schema.Boolean),
+  accounts: array(InventoryAccount),
+  defaultTarget: Target.optional(),
+  reauthenticationRequired: boolean().optional(),
 });
-export type SavedSession = typeof SavedSession.Type;
-export const PendingSession = Schema.Struct({
-  ref: Schema.NonEmptyString,
-  baseRevision: Schema.optionalKey(Schema.Number),
-  startUrl: Schema.optionalKey(Schema.String),
-  region: Schema.optionalKey(Schema.String),
-  pending: Schema.optionalKey(PendingIdentitySessionSchema),
-  nextPollAt: Schema.Number,
+export type SavedSession = Infer<typeof SavedSession>;
+export const PendingSession = object({
+  ref: string({ minLength: 1 }),
+  baseRevision: number().optional(),
+  startUrl: string().optional(),
+  region: string().optional(),
+  pending: PendingIdentitySessionSchema.optional(),
+  nextPollAt: number(),
 });
 export const guardedName = (name: string) => /(?:^|[^a-z])prod(?:uction)?(?:$|[^a-z])/iu.test(name);
 export const assignedInventory = async (
   aws: ReturnType<typeof import("./identity-client.ts").makeIdentityCenter>,
-  session: typeof IdentitySessionSchema.Type,
-  previous: readonly (typeof InventoryAccount.Type)[] = [],
+  session: Infer<typeof IdentitySessionSchema>,
+  previous: readonly Infer<typeof InventoryAccount>[] = [],
 ) => {
   const assigned = await aws.listAccounts(session),
-    accounts: (typeof InventoryAccount.Type)[] = [];
+    accounts: Infer<typeof InventoryAccount>[] = [];
   const seen = new Set<string>();
   for (const account of assigned) {
     if (seen.has(account.accountId))

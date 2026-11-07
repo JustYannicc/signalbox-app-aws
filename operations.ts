@@ -11,6 +11,7 @@ import {
   type QueryContext,
 } from "apps";
 import { callMcpTool } from "apps/mcp";
+import { never } from "apps/operations/approval";
 import { AwsClient } from "./vendor/aws4fetch.js";
 import { requirements } from "./requirements.ts";
 import { managedMcpEndpoint } from "./wire.ts";
@@ -41,6 +42,7 @@ export const createOperations = (connectionId: string) => {
   );
   const refresh = mutation(
     {
+      approval: never(),
       input: object({}),
       description:
         "Refresh the accounts and roles AWS assigns to this connection. Retains its default and production classifications.",
@@ -69,6 +71,7 @@ export const createOperations = (connectionId: string) => {
   );
   const setDefault = mutation(
     {
+      approval: never(),
       input: object({ accountId: string().optional(), roleName: string().optional() }),
       description:
         "Explicitly save an assigned AWS account and role as your default, or omit both to clear it.",
@@ -104,6 +107,7 @@ export const createOperations = (connectionId: string) => {
   );
   const setProduction = mutation(
     {
+      approval: never(),
       input: object({ accountId: string(), production: boolean() }),
       description:
         "Set a production guard by stable AWS account ID. Renaming the account never changes this choice.",
@@ -140,6 +144,9 @@ export const createOperations = (connectionId: string) => {
   const callTool = (name: "get_tasks" | "run_script" | "get_presigned_url") =>
     mutation(
       {
+        // The handler requires native consent after resolving the AWS target and saved revision.
+        // An earlier generic prompt cannot bind that target or detect re-sign-in while waiting.
+        approval: never(),
         input: callInput,
         description: `AWS ${name}. Choose an assigned account name or ID and role for this task. Only an explicitly saved default may fill an omitted target. Scripts and presigned URLs require human approval of the exact target and arguments.`,
       },
@@ -182,7 +189,12 @@ export const createOperations = (connectionId: string) => {
           const credentials = await sessionRequest(ctx, stored, () =>
             aws.getRoleCredentials(stored.value.session, target.account.accountId, target.roleName),
           );
-          const signer = new AwsClient({ ...credentials, service: "aws-mcp", region: "us-east-1" });
+          const signer = new AwsClient({
+            ...credentials,
+            service: "aws-mcp",
+            region: "us-east-1",
+            fetch: ctx.fetch,
+          });
           const result = await callMcpTool(
             {
               url: managedMcpEndpoint,

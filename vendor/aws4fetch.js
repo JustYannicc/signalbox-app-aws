@@ -2,6 +2,7 @@
  * @license MIT <https://opensource.org/licenses/MIT>
  * @copyright Michael Hart 2024
  */
+// Host integration: HTTP uses the required context fetch. Signing is unchanged.
 const encoder = new TextEncoder();
 const HOST_SERVICES = {
   appstream2: 'appstream',
@@ -27,7 +28,7 @@ const UNSIGNABLE_HEADERS = new Set([
   'connection',
 ]);
 class AwsClient {
-  constructor({ accessKeyId, secretAccessKey, sessionToken, service, region, cache, retries, initRetryMs }) {
+  constructor({ accessKeyId, secretAccessKey, sessionToken, service, region, cache, retries, initRetryMs, fetch: contextFetch }) {
     if (accessKeyId == null) throw new TypeError('accessKeyId is a required option')
     if (secretAccessKey == null) throw new TypeError('secretAccessKey is a required option')
     this.accessKeyId = accessKeyId;
@@ -38,6 +39,7 @@ class AwsClient {
     this.cache = cache || new Map();
     this.retries = retries != null ? retries : 10;
     this.initRetryMs = initRetryMs || 50;
+    this.contextFetch = contextFetch;
   }
   async sign(input, init) {
     if (input instanceof Request) {
@@ -62,7 +64,7 @@ class AwsClient {
   }
   async fetch(input, init) {
     for (let i = 0; i <= this.retries; i++) {
-      const fetched = fetch(await this.sign(input, init));
+      const fetched = this.contextFetch(await this.sign(input, init));
       if (i === this.retries) {
         return fetched
       }
