@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
-    "apps": "0.0.1-beta.104-basalt.13",
+    "apps": "0.0.1-beta.104-basalt.12",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
