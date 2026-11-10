@@ -37,6 +37,7 @@ export type {
   TemporaryRoleCredentials,
 } from "./identity-schema.ts";
 import { identityHttp } from "./identity-http.ts";
+import { deviceVerificationUrl } from "./device-url.ts";
 
 type WireEndpoints = { readonly oidc: string; readonly portal: string };
 type ClientOptions = {
@@ -86,25 +87,8 @@ export const makeIdentityCenter = (
         startUrl,
       }),
     );
-    let complete: URL;
-    let verification: URL;
-    try {
-      complete = new URL(raw.verificationUriComplete);
-      verification = new URL(raw.verificationUri);
-    } catch {
-      throw new AwsIdentityError("invalid_response", false);
-    }
-    const deviceHost = `device.sso.${region}.amazonaws.com`;
-    if (
-      [complete, verification].some(
-        (url) =>
-          url.protocol !== "https:" ||
-          url.hostname !== deviceHost ||
-          url.username !== "" ||
-          url.password !== "" ||
-          url.port !== "",
-      )
-    )
+    const complete = deviceVerificationUrl(raw.verificationUriComplete, region, "complete");
+    if (!complete || !deviceVerificationUrl(raw.verificationUri, region, "page"))
       throw new AwsIdentityError("invalid_response", false);
     return {
       client,
