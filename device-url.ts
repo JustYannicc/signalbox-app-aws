@@ -5,7 +5,8 @@
  * - Current: `https://ssoins-<instance id>.<region>.portal.amazonaws.com/#/device?user_code=…`
  * - Legacy: `https://device.sso.<region>.amazonaws.com/?user_code=…`
  */
-const instancePortal = /^ssoins-[a-z0-9]{16}\.([a-z0-9-]+)\.portal\.amazonaws\.com$/u;
+// Instance IDs use [a-zA-Z0-9-.]{16}; a dot would add a DNS label and URL lowercases hosts.
+const instancePortal = /^ssoins-[a-z0-9-]{16}\.([a-z0-9-]+)\.portal\.amazonaws\.com$/u;
 const userCode = /^[A-Za-z0-9-]+$/u;
 
 /** The parsed page when `value` is an AWS device sign-in page for `region`; otherwise undefined. */

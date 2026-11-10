@@ -55,7 +55,8 @@ export const identityHttp = (fetcher: typeof globalThis.fetch) => {
       throw new AwsIdentityError("invalid_response", false);
     let value: unknown;
     try {
-      value = text === "" ? {} : JSON.parse(text);
+      // AWS JSON protocols may send null for an unset optional member; decoders expect absence.
+      value = text === "" ? {} : JSON.parse(text, (_key, field) => field ?? undefined);
     } catch {
       throw new AwsIdentityError("invalid_response", false);
     }
