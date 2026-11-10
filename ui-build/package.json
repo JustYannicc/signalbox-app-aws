@@ -1,0 +1,10 @@
+{
+  "name": "aws-ui-build",
+  "private": true,
+  "type": "module",
+  "description": "Builds ui/main.js so the hosted compiler does not install React for this app.",
+  "devDependencies": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  }
+}
