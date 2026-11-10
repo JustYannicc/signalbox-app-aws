@@ -1,0 +1,454 @@
+/* The approved dark AWS accounts mock (carry 0402), without the host shell it was drawn inside. */
+:root {
+  color-scheme: dark;
+  --bg: #171717;
+  --panel: #202020;
+  --line: #393939;
+  --row: #343434;
+  --field: #242424;
+  --field-line: #505050;
+  --muted: #b1b1b1;
+  --fg: #f3f3f3;
+  --accent: #e8e8e8;
+  --amber: #f4bf69;
+  --green: #9dceae;
+  --focus: #b6d5ff;
+  --control: 40px;
+  --row-control: 36px;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    14px/1.5 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+summary {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: var(--control);
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #292929;
+  color: var(--fg);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+button:hover:not(:disabled),
+.button:hover {
+  background: #353535;
+}
+.primary {
+  background: var(--accent);
+  color: #191919;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.primary:hover:not(:disabled),
+.button.primary:hover {
+  background: #fff;
+}
+.quiet {
+  background: transparent;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control);
+  border: 1px solid var(--field-line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--fg);
+  padding: 8px 10px;
+}
+select:disabled {
+  opacity: 0.55;
+}
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  flex: none;
+  accent-color: var(--accent);
+}
+h1 {
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 0 0 8px;
+  letter-spacing: -0.015em;
+}
+h2 {
+  font-size: 15px;
+  line-height: 1.35;
+  margin: 0 0 4px;
+}
+h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+p {
+  margin: 0 0 14px;
+}
+small,
+.muted {
+  color: var(--muted);
+}
+small {
+  display: block;
+  font-size: 12px;
+}
+code,
+pre {
+  font:
+    12px/1.5 ui-monospace,
+    "SF Mono",
+    Menlo,
+    monospace;
+}
+.min0 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.page {
+  max-width: 930px;
+  padding: 32px 40px 64px;
+}
+.intro {
+  max-width: 650px;
+}
+.connection {
+  max-width: 850px;
+  margin-top: 22px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.connection.empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.connection.empty p {
+  margin: 0;
+  max-width: 60ch;
+}
+.connectionhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 18px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.connectionhead .url {
+  margin-top: 1px;
+}
+.headactions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.status {
+  margin-top: 4px;
+  color: var(--green);
+  font-size: 12px;
+}
+.status.expired {
+  color: var(--amber);
+}
+.loading {
+  margin: 18px 0 0;
+}
+.badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 6px;
+  border: 1px solid #615239;
+  border-radius: 4px;
+  color: var(--amber);
+  font-size: 11px;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+.accounts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.account {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px 116px;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--row);
+}
+.account:last-child {
+  border-bottom: 0;
+}
+.account strong {
+  font-weight: 500;
+}
+.account small {
+  margin-top: 2px;
+}
+.account select,
+.account button {
+  min-height: var(--row-control);
+  font-size: 12px;
+}
+.account select {
+  padding: 5px 8px;
+}
+.account button {
+  padding: 6px 8px;
+}
+.role {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  padding: 0 9px;
+}
+.defaultmark {
+  justify-self: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+}
+.id {
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+.note {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.note span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.linkbutton {
+  min-height: var(--row-control);
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: #ccc;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.linkbutton:hover:not(:disabled) {
+  background: transparent;
+  color: #fff;
+}
+.help {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+.help summary {
+  cursor: pointer;
+  color: #ddd;
+  min-height: 28px;
+}
+.help p {
+  margin-top: 12px;
+  color: var(--muted);
+  max-width: 70ch;
+}
+.production {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+}
+.production label {
+  cursor: pointer;
+}
+.access {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.access > p {
+  font-size: 13px;
+  max-width: 70ch;
+}
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.notice {
+  margin: 18px 0 0;
+  padding: 14px;
+  border: 1px solid #615239;
+  border-radius: 7px;
+  background: #2e2820;
+  color: #f0d2a2;
+  overflow-wrap: anywhere;
+}
+.notice p {
+  margin: 0;
+}
+.notice p + p {
+  margin-top: 6px;
+}
+.notice.good {
+  border-color: #415c49;
+  background: #222c25;
+  color: #b7d6c0;
+}
+.noticetitle {
+  display: block;
+  margin-bottom: 4px;
+  color: #fbe3bd;
+}
+.noticeactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.receipt {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #191919;
+}
+.receipt dl {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 9px 14px;
+  margin: 12px 0 0;
+}
+.receipt dt {
+  color: var(--muted);
+}
+.receipt dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.receipt .help {
+  margin-top: 16px;
+}
+.receipt pre {
+  max-height: 240px;
+  margin: 10px 0 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--fg);
+}
+.check {
+  color: var(--green);
+}
+.refused {
+  color: var(--amber);
+}
+@media (max-width: 650px) {
+  :root {
+    --control: 44px;
+    --row-control: 44px;
+  }
+  .page {
+    padding: 23px 18px 48px;
+  }
+  .connection {
+    padding: 16px;
+  }
+  .connection.empty {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .connectionhead {
+    flex-direction: column;
+  }
+  .headactions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .headactions > * {
+    flex: 1;
+  }
+  /* Below 16px, iOS zooms the page when a select gains focus. */
+  select,
+  .account select {
+    font-size: 16px;
+  }
+  .account {
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 8px;
+  }
+  .account > .min0 {
+    grid-column: 1 / -1;
+  }
+  .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .noticeactions > * {
+    flex: 1;
+  }
+  .receipt dl {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+@media (pointer: coarse) {
+  :root {
+    --row-control: 44px;
+  }
+}
