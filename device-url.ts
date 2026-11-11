@@ -2,12 +2,15 @@
  * AWS-owned pages a device sign-in may send a person to. The OIDC service names the page, but
  * Basalt shows it as a link, so only exact AWS hosts in the connection's own region pass.
  *
- * - Current: `https://ssoins-<instance id>.<region>.portal.amazonaws.com/#/device?user_code=…`
+ * - Sign-in platform: `https://<region>.signin.aws/platform/authorize?request_uri=urn:ietf:params:oauth:request_uri:…`
+ *   (also `<region>.sso.signin.aws`). The request URI carries the code, so the link has no user_code.
+ * - Instance portal: `https://ssoins-<instance id>.<region>.portal.amazonaws.com/#/device?user_code=…`
  * - Legacy: `https://device.sso.<region>.amazonaws.com/?user_code=…`
  */
 // Instance IDs use [a-zA-Z0-9-.]{16}; a dot would add a DNS label and URL lowercases hosts.
 const instancePortal = /^ssoins-[a-z0-9-]{16}\.([a-z0-9-]+)\.portal\.amazonaws\.com$/u;
 const userCode = /^[A-Za-z0-9-]+$/u;
+const pushedRequest = "urn:ietf:params:oauth:request_uri:";
 
 /** The parsed page when `value` is an AWS device sign-in page for `region`; otherwise undefined. */
 export const deviceVerificationUrl = (
@@ -29,6 +32,12 @@ export const deviceVerificationUrl = (
   )
     return undefined;
   if (url.hostname === `device.sso.${region}.amazonaws.com`) return url;
+  if (url.hostname === `${region}.signin.aws` || url.hostname === `${region}.sso.signin.aws`)
+    return url.pathname === "/platform/authorize" &&
+      url.hash === "" &&
+      url.searchParams.get("request_uri")?.startsWith(pushedRequest) === true
+      ? url
+      : undefined;
   if (instancePortal.exec(url.hostname)?.[1] !== region) return undefined;
   if (url.pathname !== "/" || url.search !== "") return undefined;
   const fragment = /^#\/device(?:\?user_code=([^&#]*))?$/u.exec(url.hash);
