@@ -10,7 +10,8 @@
 // Instance IDs use [a-zA-Z0-9-.]{16}; a dot would add a DNS label and URL lowercases hosts.
 const instancePortal = /^ssoins-[a-z0-9-]{16}\.([a-z0-9-]+)\.portal\.amazonaws\.com$/u;
 const userCode = /^[A-Za-z0-9-]+$/u;
-const pushedRequest = "urn:ietf:params:oauth:request_uri:";
+// A pushed authorization request URN with its opaque, URL-safe reference.
+const pushedRequest = /^urn:ietf:params:oauth:request_uri:[A-Za-z0-9._~-]+$/u;
 
 /** The parsed page when `value` is an AWS device sign-in page for `region`; otherwise undefined. */
 export const deviceVerificationUrl = (
@@ -35,7 +36,7 @@ export const deviceVerificationUrl = (
   if (url.hostname === `${region}.signin.aws` || url.hostname === `${region}.sso.signin.aws`)
     return url.pathname === "/platform/authorize" &&
       url.hash === "" &&
-      url.searchParams.get("request_uri")?.startsWith(pushedRequest) === true
+      pushedRequest.test(url.searchParams.get("request_uri") ?? "")
       ? url
       : undefined;
   if (instancePortal.exec(url.hostname)?.[1] !== region) return undefined;
